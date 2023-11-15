@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
-string? connectionString = null;
+string connectionString = "";
 string secret = "";
 
 if (builder.Environment.IsProduction())
@@ -29,7 +29,7 @@ else
 {
     //local
     builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetSection(DatabaseSettings.DatabaseConfiguration));
-    connectionString = builder.Configuration.GetSection("DatabaseSettings:ConnectionString").Value;
+    connectionString = builder.Configuration.GetSection("ConnectionString").Value;
 
     secret = builder.Configuration.GetSection("ConfiguracaoToken:ClientSecret").Value;
 

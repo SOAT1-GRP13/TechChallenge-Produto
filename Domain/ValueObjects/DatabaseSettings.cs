@@ -7,7 +7,7 @@
             ConnectionString = string.Empty;
         }
 
-        public const string DatabaseConfiguration = "DatabaseSettings";
+        public const string DatabaseConfiguration = "ConnectionString";
         public string ConnectionString { get; set; }
     }
 }
