@@ -2,23 +2,39 @@ using API.Data;
 using API.Setup;
 using Infra.Catalogo;
 using System.Reflection;
+using Domain.ValueObjects;
 using Domain.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Filters;
 using Application.Catalogo.AutoMapper;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-builder.Configuration.AddAmazonSecretsManager("us-west-2", "soat1-grp13");
-builder.Services.Configure<Secrets>(builder.Configuration);
+string? connectionString = null;
+string secret = "";
 
-var connectionString = builder.Configuration.GetSection("ConnectionString").Value;
+if (builder.Environment.IsProduction())
+{
+    builder.Configuration.AddAmazonSecretsManager("us-west-2", "soat1-grp13");
+    builder.Services.Configure<Secrets>(builder.Configuration);
 
-string secret = builder.Configuration.GetSection("ClientSecret").Value;
+    connectionString = builder.Configuration.GetSection("ConnectionString").Value;
+
+    secret = builder.Configuration.GetSection("ClientSecret").Value;
+} 
+else
+{
+    //local
+    builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetSection(DatabaseSettings.DatabaseConfiguration));
+    connectionString = builder.Configuration.GetSection("DatabaseSettings:ConnectionString").Value;
+
+    secret = builder.Configuration.GetSection("ConfiguracaoToken:ClientSecret").Value;
+
+    builder.Services.Configure<ConfiguracaoToken>(builder.Configuration.GetSection(ConfiguracaoToken.Configuration));
+}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(connectionString));
