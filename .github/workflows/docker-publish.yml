@@ -13,22 +13,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Read Build Number
-      id: read_build_number
-      run: echo "::set-output name=build_id::$(cat build_number.txt || echo 0)"
+    - name: Get version from URL
+      id: get-version
+      run: echo "::set-output name=version::$(curl -s https://devcm.com.br/versao?projeto=TechChallenge-Pagamento)"
 
-    - name: Increment Build Number
-      id: increment_build_number
-      run: echo $((BUILD_NUMBER + 1)) > build_number.txt
+    - name: Set up version
+      run: echo "VERSION=${{ steps.get-version.outputs.version }}" >> $GITHUB_ENV
 
     - name: Login to Docker Hub
       run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build Docker image
-      run: docker build -t christiandmelo/tech-challenge-soat1-grp13-produto:${{ steps.read_build_number.outputs.build_id }} .
+      run: docker build -t christiandmelo/tech-challenge-soat1-grp13:${{ env.VERSION }} .
 
-    - name: Push Docker image with build number
-      run: docker push christiandmelo/tech-challenge-soat1-grp13-produto:${{ steps.read_build_number.outputs.build_id }}
-
-    - name: Push Docker image latest
-      run: docker push christiandmelo/tech-challenge-soat1-grp13-produto:latest
+    - name: Push Docker image
+      run: docker push christiandmelo/tech-challenge-soat1-grp13:${{ env.VERSION }}
