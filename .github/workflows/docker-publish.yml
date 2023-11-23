@@ -15,7 +15,7 @@ jobs:
 
     - name: Get version from URL
       id: get-version
-      run: echo "::set-output name=version::$(curl -s https://devcm.com.br/versao/?projeto=TechChallenge-Pagamento)"
+      run: echo "::set-output name=version::$(curl -s https://devcm.com.br/versao/?projeto=TechChallenge-Produto)"
 
     - name: Set up version
       run: echo "VERSION=${{ steps.get-version.outputs.version }}" >> $GITHUB_ENV
