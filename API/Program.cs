@@ -21,7 +21,7 @@ if (builder.Environment.IsProduction())
     builder.Configuration.AddAmazonSecretsManager("us-west-2", "soat1-grp13");
     builder.Services.Configure<Secrets>(builder.Configuration);
 
-    connectionString = builder.Configuration.GetSection("ConnectionString").Value;
+    connectionString = builder.Configuration.GetSection("ConnectionStringProduto").Value;
 
     secret = builder.Configuration.GetSection("ClientSecret").Value;
 } 
