@@ -1,4 +1,4 @@
-name: Docker Build and Publish
+name: Publish
 
 on:
   push:
@@ -11,6 +11,8 @@ jobs:
 
     steps:
     - name: Checkout code
+      outputs:
+        VERSION: ${{ steps.get-version.outputs.version }}
       uses: actions/checkout@v2
 
     - name: Get version from URL
@@ -47,6 +49,8 @@ jobs:
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
+      env:
+        VERSION: ${{needs.build-and-push.outputs.VERSION}}
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: deploy/task-definition.json
