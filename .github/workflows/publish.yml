@@ -50,7 +50,7 @@ jobs:
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: deploy/task-definition.json
-        container-name: pedido-api
+        container-name: produto-api
         image: christiandmelo/tech-challenge-soat1-grp13-produto:${{ env.VERSION }}
     
     - name: Deploy Amazon ECS task definition
