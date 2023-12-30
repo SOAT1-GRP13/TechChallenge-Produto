@@ -8,6 +8,7 @@ COPY ./API/*.csproj ./API/
 COPY ./Application/*.csproj ./Application/
 COPY ./Domain/*.csproj ./Domain/
 COPY ./Infra/*.csproj ./Infra/
+COPY ./Testes/Domain.Testes/*.csproj ./Testes/Domain.Testes/
 RUN dotnet restore
 
 # Copiando o código-fonte e compilando a aplicação
