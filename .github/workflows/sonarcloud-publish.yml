@@ -33,9 +33,6 @@ jobs:
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
 
-      - name: Install dotnet-reportgenerator-globaltool
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
-
       - name: Install SonarCloud scanner
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
@@ -43,13 +40,15 @@ jobs:
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
 
-      - name: Build and analyze with coverage
+      - name: Test and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"SOAT1-GRP13_TechChallenge-Produto" /o:"soat1-grp13" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-          dotnet build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-          ReportGenerator "-reports:**\coverage.opencover.xml" "-targetdir:coverlet-report" -reporttypes:SonarQube
+          dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover -l trx
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+      - name: Build
+        run: dotnet build --configuration Release
