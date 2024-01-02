@@ -58,7 +58,7 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-app.UsePathBase(new PathString("/Catalogo"));
+app.UsePathBase(new PathString("/produto"));
 app.UseRouting();
 app.UseSwagger();
 app.UseSwaggerUI();
