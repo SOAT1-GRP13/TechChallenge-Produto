@@ -77,7 +77,7 @@ namespace API.Controllers
         }
 
         [HttpGet("busca_produto/{id}")]
-        [Authorize]
+        [AllowAnonymous]
         [SwaggerOperation(
             Summary = "Busca produto por id",
             Description = "Retorna produto por id. Precisa se autenticar")]

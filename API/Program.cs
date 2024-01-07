@@ -21,7 +21,7 @@ if (builder.Environment.IsProduction())
     builder.Configuration.AddAmazonSecretsManager("us-west-2", "produto-secret");
     builder.Services.Configure<Secrets>(builder.Configuration);
 
-    connectionString = builder.Configuration.GetSection("ConnectionStringProduto").Value;
+    connectionString = builder.Configuration.GetSection("ConnectionString").Value;
 
     secret = builder.Configuration.GetSection("ClientSecret").Value;
 } 
@@ -58,7 +58,7 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-app.UsePathBase(new PathString("/Catalogo"));
+app.UsePathBase(new PathString("/produto"));
 app.UseRouting();
 app.UseSwagger();
 app.UseSwaggerUI();
