@@ -27,6 +27,27 @@ namespace Domain.Testes
         }
 
         [Fact]
+        public void AoChamarValidarSeIgual_SeObjetosForemDiferentes_NaoLancarExcecao()
+        {
+            // Arrange
+            var objeto1 = new object();
+            var objeto2 = new object();
+            var mensagem = "Objetos são iguais";
+
+            // Act
+            try
+            {
+                Validacoes.ValidarSeIgual(objeto1, objeto2, mensagem);
+                Assert.True(true);
+            }
+            // Assert
+            catch (Exception ex)
+            {
+                Assert.True(false, ex.Message);
+            }
+        }
+
+        [Fact]
         public void AoChamarValidarSeDiferente_SeObjetosForemDiferentes_LancarExcecao()
         {
             // Arrange
@@ -44,6 +65,27 @@ namespace Domain.Testes
             catch (Exception ex)
             {
                 Assert.Equal(mensagem, ex.Message);
+            }
+        }
+
+        [Fact]
+        public void AoChamarValidarSeDiferente_SeObjetosForemIguais_NaoLancarExcecao()
+        {
+            // Arrange
+            var objeto1 = new object();
+            var objeto2 = objeto1;
+            var mensagem = "Objetos são diferentes";
+
+            // Act
+            try
+            {
+                Validacoes.ValidarSeDiferente(objeto1, objeto2, mensagem);
+                Assert.True(true);
+            }
+            // Assert
+            catch (Exception ex)
+            {
+                Assert.True(false, ex.Message);
             }
         }
 
@@ -69,6 +111,27 @@ namespace Domain.Testes
         }
 
         [Fact]
+        public void AoChamarValidarSeDiferente_SeStringsForemIguais_NaoLancarExcecao()
+        {
+            // Arrange
+            var pattern = "^[a-zA-Z]*$";
+            var valor = "abc";
+            var mensagem = "Valor nao bate";
+
+            // Act
+            try
+            {
+                Validacoes.ValidarSeDiferente(pattern, valor, mensagem);
+                Assert.True(true);
+            }
+            // Assert
+            catch (Exception ex)
+            {
+                Assert.True(false, ex.Message);
+            }
+        }
+
+        [Fact]
         public void AoChamarValidarTamanho_SeStringForMaiorQueMaximo_LancarExcecao()
         {
             // Arrange
@@ -86,6 +149,27 @@ namespace Domain.Testes
             catch (Exception ex)
             {
                 Assert.Equal(mensagem, ex.Message);
+            }
+        }
+
+        [Fact]
+        public static void AoChamarValidarTamanho_SeStringForIgualAoMaximo_NaoLancarExcecao()
+        {
+            // Arrange
+            var valor = "12345";
+            var maximo = 5;
+            var mensagem = "Valor nao bate";
+
+            // Act
+            try
+            {
+                Validacoes.ValidarTamanho(valor, maximo, mensagem);
+                Assert.True(true);
+            }
+            // Assert
+            catch (Exception ex)
+            {
+                Assert.True(false, ex.Message);
             }
         }
 
@@ -112,6 +196,28 @@ namespace Domain.Testes
         }
 
         [Fact]
+        public static void AoChamarValidarTamanho_SeStringForIgualAoMinimo_NaoLancarExcecao()
+        {
+            // Arrange
+            var valor = "123456";
+            var minimo = 6;
+            var maximo = 10;
+            var mensagem = "Valor nao bate";
+
+            // Act
+            try
+            {
+                Validacoes.ValidarTamanho(valor, minimo, maximo, mensagem);
+                Assert.True(true);
+            }
+            // Assert
+            catch (Exception ex)
+            {
+                Assert.True(false, ex.Message);
+            }
+        }
+
+        [Fact]
         public void AoChamarValidarSeVazio_SeStringForVazia_LancarExcecao()
         {
             // Arrange
@@ -132,6 +238,27 @@ namespace Domain.Testes
         }
 
         [Fact]
+        public void AoValidarSeVazio_SeStringNaoForNula_NaoLancarExcecao()
+        {
+            // Arrange
+            string valor = "Teste";
+            var mensagem = "Valor nao bate";
+
+            // Act
+            try
+            {
+                Validacoes.ValidarSeVazio(valor, mensagem);
+                Assert.True(true);
+            }
+            // Assert
+            catch (Exception)
+            {
+                Assert.True(false);
+            }
+
+        }
+
+        [Fact]
         public void AoChamarValidarSeNulo_SeObjetoForNulo_LancarExcecao()
         {
             // Arrange
@@ -148,6 +275,26 @@ namespace Domain.Testes
             catch (Exception ex)
             {
                 Assert.Equal(mensagem, ex.Message);
+            }
+        }
+
+        [Fact]
+        public void AoChamarValidarSeNulo_SeObjetoNaoForNulo_NaoLancarExcecao()
+        {
+            // Arrange
+            object objeto = new object();
+            var mensagem = "Valor nao bate";
+
+            // Act
+            try
+            {
+                Validacoes.ValidarSeNulo(objeto, mensagem);
+                Assert.True(true);
+            }
+            // Assert
+            catch (Exception)
+            {
+                Assert.True(false);
             }
         }
 
