@@ -3,7 +3,7 @@ using Xunit.Sdk;
 
 namespace Domain.Testes
 {
-    public class ValidacoesTestes
+    public class ValidacoesTests
     {
         [Fact]
         public void AoChamarValidarSeIgual_SeObjetosForemIguais_LancarExcecao()
