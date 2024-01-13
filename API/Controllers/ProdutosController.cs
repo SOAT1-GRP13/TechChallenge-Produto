@@ -137,27 +137,20 @@ namespace API.Controllers
         [SwaggerResponse(500, "Caso algo inesperado aconteça")]
         public async Task<IActionResult> Post([FromBody] ProdutoInput produtoInput)
         {
-
             try
             {
-
                 var command = new AdicionarProdutoCommand(produtoInput);
                 var produto = await _mediatorHandler.EnviarComando<AdicionarProdutoCommand, ProdutoOutput>(command);
 
                 if (OperacaoValida())
-                {
                     return Ok(produto);
-                }
                 else
-                {
                     return StatusCode(StatusCodes.Status400BadRequest, ObterMensagensErro());
-                }
             }
             catch (Exception ex)
             {
-
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                                                          $"Erro ao tentar adicionar produto. Erro: {ex.Message}");
+                                  $"Erro ao tentar adicionar produto. Erro: {ex.Message}");
             }
         }
 
