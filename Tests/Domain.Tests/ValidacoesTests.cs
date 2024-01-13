@@ -1,7 +1,7 @@
 using Domain.Base.DomainObjects;
 using Xunit.Sdk;
 
-namespace Domain.Testes
+namespace Domain.Tests
 {
     public class ValidacoesTests
     {
