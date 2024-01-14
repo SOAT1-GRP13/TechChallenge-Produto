@@ -172,7 +172,10 @@ namespace API.Controllers
                 var command = new AtualizarProdutoCommand(produtoEditarInput);
                 var produtoAtualizado = await _mediatorHandler.EnviarComando<AtualizarProdutoCommand, ProdutoOutput>(command);
 
-                return Ok(produtoAtualizado);
+                if (OperacaoValida())
+                    return Ok(produtoAtualizado);
+                else
+                    return StatusCode(StatusCodes.Status400BadRequest, ObterMensagensErro());
             }
             catch (Exception ex)
             {

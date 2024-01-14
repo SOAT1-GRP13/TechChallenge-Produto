@@ -536,6 +536,57 @@ namespace API.Tests.Controllers
         }
 
         [Fact]
+        public async Task AoChamarPut_DeveRetornarBadRequest_QuandoCadastroProdutoInvalido()
+        {
+            // Arrange
+            var serviceProvider = new TestStartup().ConfigureServices(new ServiceCollection());
+
+            var domainNotificationHandler = serviceProvider.GetRequiredService<INotificationHandler<DomainNotification>>();
+            var mediatorHandler = serviceProvider.GetRequiredService<IMediatorHandler>();
+
+            var produtosQueriesMock = new Mock<IProdutosQueries>();
+            produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
+                .ReturnsAsync(new ProdutoDto
+                {
+                    Id = Guid.NewGuid(),
+                    CategoriaId = Guid.NewGuid(),
+                    Nome = "Nome Antigo",
+                    Ativo = true,
+                    Valor = 100.00m,
+                    Imagem = "Base64ImagemAntiga",
+                    Descricao = "Descrição Antiga"
+                });
+
+            var produtosController = new ProdutosController(
+                produtosQueriesMock.Object,
+                domainNotificationHandler,
+                mediatorHandler
+            );
+
+            var produtoInput = new ProdutoEditarInput
+            {
+                CategoriaId = Guid.Empty, // CategoriaId inválido
+                Nome = "", // Nome inválido
+                Ativo = false,
+                Valor = 0, // Valor inválido
+                Imagem = "", // Imagem inválida
+                Descricao = "" // Descrição inválida
+            };
+
+            // Act
+            var resultado = await produtosController.Put(produtoInput);
+
+            // Assert
+            var badRequestObjectResult = Assert.IsType<ObjectResult>(resultado);
+            var mensagensErro = Assert.IsType<List<string>>(badRequestObjectResult.Value);
+            Assert.Contains(AdicionarProdutoValidation.IdCategoriaErroMsg, mensagensErro);
+            Assert.Contains(AdicionarProdutoValidation.NomeErroMsg, mensagensErro);
+            Assert.Contains(AdicionarProdutoValidation.ValorErroMsg, mensagensErro);
+            Assert.Contains("Imagem é obrigatório", mensagensErro);
+            Assert.Contains("Descrição é obrigatório", mensagensErro);
+        }
+
+        [Fact]
         public async Task AoChamarPut_DeveRetornarNotFound_QuandoProdutoNaoEncontrado()
         {
             // Arrange
