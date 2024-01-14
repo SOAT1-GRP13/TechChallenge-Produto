@@ -650,7 +650,8 @@ namespace API.Tests.Controllers
                     Ativo = true,
                     Valor = 100.00m,
                     Imagem = "Base64ImagemAntiga",
-                    Descricao = "Descrição Antiga"
+                    Descricao = "Descrição Antiga",
+                    DataCadastro = DateTime.Now
                 });
 
             var produtosController = new ProdutosController(
@@ -706,7 +707,8 @@ namespace API.Tests.Controllers
                     Ativo = true,
                     Valor = 100.00m,
                     Imagem = "Base64ImagemAntiga",
-                    Descricao = "Descrição Antiga"
+                    Descricao = "Descrição Antiga",
+                    DataCadastro = DateTime.Now
                 });
 
             var produtosController = new ProdutosController(
@@ -756,6 +758,7 @@ namespace API.Tests.Controllers
 
             // Assert
             Assert.IsType<NotFoundObjectResult>(resultado);
+            domainNotificationHandler.Dispose();
         }
 
         [Fact]
@@ -784,6 +787,7 @@ namespace API.Tests.Controllers
             var objectResult = Assert.IsType<ObjectResult>(resultado);
             Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
             Assert.Equal("Erro ao tentar excluir produto. Erro: Erro ao acessar o banco de dados", objectResult.Value);
+            domainNotificationHandler.Dispose();
         }
 
         #endregion
