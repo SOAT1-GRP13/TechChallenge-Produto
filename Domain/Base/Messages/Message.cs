@@ -14,6 +14,7 @@ namespace Domain.Base.Messages
         protected Message()
         {
             MessageType = GetType().Name;
+            AggregateId = Guid.NewGuid();
         }
     }
 }
