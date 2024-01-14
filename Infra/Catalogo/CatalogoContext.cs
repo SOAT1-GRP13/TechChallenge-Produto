@@ -20,7 +20,13 @@ namespace Infra.Catalogo
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql(_configuration.GetSection("ConnectionString").Value);
+            //optionsBuilder.UseNpgsql(_configuration.GetSection("ConnectionString").Value);
+
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (!string.IsNullOrEmpty(env) && env == "Test")
+                optionsBuilder.UseInMemoryDatabase("CatalogoTestDb");
+            else
+                optionsBuilder.UseNpgsql(_configuration.GetSection("ConnectionString").Value);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
