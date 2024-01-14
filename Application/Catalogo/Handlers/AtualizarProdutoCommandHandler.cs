@@ -37,8 +37,11 @@ namespace Application.Catalogo.Handlers
             }
 
             try
-            {
+            {              
                 var produto = _mapper.Map<Produto>(message.Input);
+
+                produto.Validar();
+
                 await _produtoRepository.Atualizar(produto);
                 await _produtoRepository.UnitOfWork.Commit();
 
