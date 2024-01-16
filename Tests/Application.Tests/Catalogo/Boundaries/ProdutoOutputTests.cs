@@ -20,11 +20,11 @@ namespace Application.Tests.Catalogo.Boundaries
             };
 
             // Act & Assert
-            Assert.Equal(produtoOutput.Nome, "Produto Teste");
-            Assert.Equal(produtoOutput.Descricao, "Descrição do Produto Teste");
+            Assert.Equal("Produto Teste", produtoOutput.Nome);
+            Assert.Equal("Descrição do Produto Teste", produtoOutput.Descricao);
             Assert.True(produtoOutput.Ativo);
-            Assert.Equal(produtoOutput.Valor, 99.99m);
-            Assert.Equal(produtoOutput.Imagem, "data:image/jpeg;base64,...");
+            Assert.Equal(99.99m, produtoOutput.Valor);
+            Assert.Equal("data:image/jpeg;base64,...", produtoOutput.Imagem);
         }
     }
 }

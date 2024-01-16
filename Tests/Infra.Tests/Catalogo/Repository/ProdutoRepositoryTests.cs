@@ -7,29 +7,26 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infra.Tests.Catalogo.Repository
 {
-    public class ProdutoRepositoryTests
+    public class ProdutoRepositoryTests  : IDisposable
     {
         private readonly Mock<IConfiguration> _mockConfiguration;
+        private readonly DbContextOptions<CatalogoContext> _options;
 
         public ProdutoRepositoryTests()
         {
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
 
             _mockConfiguration = new Mock<IConfiguration>();
+            _options = new DbContextOptionsBuilder<CatalogoContext>()
+                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
+                .Options;
         }
 
         [Fact]
         public async Task AoObterTodos_DeveRetornarTodosProdutos()
         {
-            
-
-            // Configura o banco de dados em memória
-            var options = new DbContextOptionsBuilder<CatalogoContext>()
-                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
-                .Options;
-
             // Povoar o banco de dados em memória
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 context.Produtos.Add(new Produto("Produto 1", "Descrição 1", true, 100m, Guid.NewGuid(), DateTime.UtcNow, "imagem1.jpg"));
                 context.Produtos.Add(new Produto("Produto 2", "Descrição 2", true, 200m, Guid.NewGuid(), DateTime.UtcNow, "imagem2.jpg"));
@@ -37,7 +34,7 @@ namespace Infra.Tests.Catalogo.Repository
             }
 
             // Utilizar o contexto populado para o teste
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var repository = new ProdutoRepository(context, _mockConfiguration.Object);
                 var produtos = await repository.ObterTodos();
@@ -50,15 +47,11 @@ namespace Infra.Tests.Catalogo.Repository
         [Fact]
         public async Task AoObterObterPorId_DeveRetornarIdSelecionado()
         {
-            // Configura o banco de dados em memória
-            var options = new DbContextOptionsBuilder<CatalogoContext>()
-                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
-                .Options;
 
             var produto1 = new Produto("Produto 1", "Descrição 1", true, 100m, Guid.NewGuid(), DateTime.UtcNow, "imagem1.jpg");
 
             // Povoar o banco de dados em memória
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 context.Produtos.Add(produto1);
                 context.Produtos.Add(new Produto("Produto 2", "Descrição 2", true, 200m, Guid.NewGuid(), DateTime.UtcNow, "imagem2.jpg"));
@@ -66,7 +59,7 @@ namespace Infra.Tests.Catalogo.Repository
             }
 
             // Utilizar o contexto populado para o teste
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var repository = new ProdutoRepository(context, _mockConfiguration.Object);
                 var produto = await repository.ObterPorId(produto1.Id);
@@ -80,17 +73,12 @@ namespace Infra.Tests.Catalogo.Repository
         [Fact]
         public async Task AoObterObterPorCategoria_DeveRetornarProdutoPorCategoria()
         {
-            // Configura o banco de dados em memória
-            var options = new DbContextOptionsBuilder<CatalogoContext>()
-                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
-                .Options;
-
             var produto1 = new Produto("Produto 1", "Descrição 1", true, 100m, Guid.NewGuid(), DateTime.UtcNow, "imagem1.jpg");
             var categoria = new Categoria("Categoria 1", 1, Guid.NewGuid());
             produto1.AlterarCategoria(categoria);
 
             // Povoar o banco de dados em memória
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 context.Produtos.Add(produto1);
                 context.Produtos.Add(new Produto("Produto 2", "Descrição 2", true, 200m, Guid.NewGuid(), DateTime.UtcNow, "imagem2.jpg"));
@@ -98,27 +86,22 @@ namespace Infra.Tests.Catalogo.Repository
             }
 
             // Utilizar o contexto populado para o teste
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var repository = new ProdutoRepository(context, _mockConfiguration.Object);
                 var produtos = await repository.ObterPorCategoria(produto1.Categoria.Codigo);
 
                 // Assert
                 Assert.NotNull(produtos);
-                Assert.Equal(1, produtos.Count());
+                Assert.Single(produtos);
             }
         }
 
         [Fact]
         public async Task AoObterCategorias_DeveRetornarTodasCategorias()
         {
-            // Configura o banco de dados em memória
-            var options = new DbContextOptionsBuilder<CatalogoContext>()
-                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
-                .Options;
-
             // Povoar o banco de dados em memória com categorias
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 context.Categorias.Add(new Categoria("Categoria 1", 1));
                 context.Categorias.Add(new Categoria("Categoria 2", 2));
@@ -126,7 +109,7 @@ namespace Infra.Tests.Catalogo.Repository
             }
 
             // Utilizar o contexto populado para o teste
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var repository = new ProdutoRepository(context, _mockConfiguration.Object);
                 var categorias = await repository.ObterCategorias();
@@ -139,44 +122,34 @@ namespace Infra.Tests.Catalogo.Repository
         [Fact]
         public async Task AoAdicionar_DeveInserirProduto()
         {
-            // Configura o banco de dados em memória
-            var options = new DbContextOptionsBuilder<CatalogoContext>()
-                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
-                .Options;
-
             var produto = new Produto("Produto Teste", "Descrição Teste", true, 100m, Guid.NewGuid(), DateTime.UtcNow, "imagem_teste.jpg");
 
             // Adicionando o produto ao banco de dados em memória
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var repository = new ProdutoRepository(context, _mockConfiguration.Object);
                 await repository.Adicionar(produto);
             }
 
             // Verificando se o produto foi adicionado
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var produtoAdicionado = await context.Produtos.FirstOrDefaultAsync(p => p.Id == produto.Id);
 
                 // Assert
                 Assert.NotNull(produtoAdicionado);
-                Assert.Equal("Produto Teste", produtoAdicionado.Nome);
+                Assert.Equal("Produto Teste", produtoAdicionado!.Nome);
             }
         }
 
         [Fact]
         public async Task AoAtualizar_DeveAlterarDadosDoProduto()
         {
-            // Configura o banco de dados em memória
-            var options = new DbContextOptionsBuilder<CatalogoContext>()
-                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
-                .Options;
-
             var produtoId = Guid.NewGuid();
             var produtoOriginal = new Produto("Produto Original", "Descrição Original", true, 100m, Guid.NewGuid(), DateTime.UtcNow, "imagem_original.jpg") { Id = produtoId };
 
             // Criar e adicionar um produto ao banco de dados em memória
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 context.Produtos.Add(produtoOriginal);
                 await context.SaveChangesAsync();
@@ -185,14 +158,14 @@ namespace Infra.Tests.Catalogo.Repository
             var produtoAtualizado = new Produto("Produto Atualizado", "Descrição Atualizada", false, 200m, Guid.NewGuid(), DateTime.UtcNow, "imagem_atualizada.jpg") { Id = produtoId };
 
             // Atualizar o produto no banco de dados em memória
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var repository = new ProdutoRepository(context, _mockConfiguration.Object);
                 await repository.Atualizar(produtoAtualizado);
             }
 
             // Verificar se o produto foi atualizado
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var produtoDoBanco = await context.Produtos.FirstOrDefaultAsync(p => p.Id == produtoId);
 
@@ -208,30 +181,25 @@ namespace Infra.Tests.Catalogo.Repository
         [Fact]
         public async Task Remover_DeveExcluirProduto()
         {
-            // Configura o banco de dados em memória
-            var options = new DbContextOptionsBuilder<CatalogoContext>()
-                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
-                .Options;
-
             var produtoId = Guid.NewGuid();
             var produto = new Produto("Produto Teste", "Descrição Teste", true, 100m, Guid.NewGuid(), DateTime.UtcNow, "imagem_teste.jpg") { Id = produtoId };
 
             // Adicionar um produto ao banco de dados em memória
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 context.Produtos.Add(produto);
                 await context.SaveChangesAsync();
             }
 
             // Remover o produto do banco de dados em memória
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var repository = new ProdutoRepository(context, _mockConfiguration.Object);
                 await repository.Remover(produto);
             }
 
             // Verificar se o produto foi removido
-            await using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            await using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var produtoDoBanco = await context.Produtos.FirstOrDefaultAsync(p => p.Id == produtoId);
 
@@ -243,15 +211,10 @@ namespace Infra.Tests.Catalogo.Repository
         [Fact]
         public void AdicionarCategoria_DeveInserirCategoria()
         {
-            // Configura o banco de dados em memória
-            var options = new DbContextOptionsBuilder<CatalogoContext>()
-                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
-                .Options;
-
             var categoria = new Categoria("Categoria Teste", 1);
 
             // Adicionando a categoria ao banco de dados em memória
-            using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var repository = new ProdutoRepository(context, _mockConfiguration.Object);
                 repository.Adicionar(categoria);
@@ -259,7 +222,7 @@ namespace Infra.Tests.Catalogo.Repository
             }
 
             // Verificando se a categoria foi adicionada
-            using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var categoriaAdicionada = context.Categorias.FirstOrDefault(c => c.Nome == "Categoria Teste");
 
@@ -273,16 +236,11 @@ namespace Infra.Tests.Catalogo.Repository
         [Fact]
         public void AtualizarCategoria_DeveAlterarDadosDaCategoria()
         {
-            // Configura o banco de dados em memória
-            var options = new DbContextOptionsBuilder<CatalogoContext>()
-                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
-                .Options;
-
             var categoriaId = Guid.NewGuid();
             var categoriaOriginal = new Categoria("Categoria Original", 1) { Id = categoriaId };
 
             // Criar e adicionar uma categoria ao banco de dados em memória
-            using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 context.Categorias.Add(categoriaOriginal);
                 context.SaveChanges();
@@ -291,7 +249,7 @@ namespace Infra.Tests.Catalogo.Repository
             var categoriaAtualizada = new Categoria("Categoria Atualizada", 2) { Id = categoriaId };
 
             // Atualizar a categoria no banco de dados em memória
-            using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var repository = new ProdutoRepository(context, _mockConfiguration.Object);
                 repository.Atualizar(categoriaAtualizada);
@@ -299,7 +257,7 @@ namespace Infra.Tests.Catalogo.Repository
             }
 
             // Verificar se a categoria foi atualizada
-            using (var context = new CatalogoContext(options, _mockConfiguration.Object))
+            using (var context = new CatalogoContext(_options, _mockConfiguration.Object))
             {
                 var categoriaDoBanco = context.Categorias.FirstOrDefault(c => c.Id == categoriaId);
 
@@ -313,12 +271,8 @@ namespace Infra.Tests.Catalogo.Repository
         [Fact]
         public void Dispose_DeveLiberarRecursos()
         {
-            // Configura o banco de dados em memória
-            var options = new DbContextOptionsBuilder<CatalogoContext>()
-                .UseInMemoryDatabase(databaseName: "CatalogoTestDb")
-                .Options;
 
-            var context = new CatalogoContext(options, _mockConfiguration.Object);
+            var context = new CatalogoContext(_options, _mockConfiguration.Object);
             var repository = new ProdutoRepository(context, _mockConfiguration.Object);
 
             // Act
@@ -326,6 +280,11 @@ namespace Infra.Tests.Catalogo.Repository
 
             // Assert
             Assert.Throws<ObjectDisposedException>(() => context.Set<Produto>().ToList());
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
         }
     }
 }
