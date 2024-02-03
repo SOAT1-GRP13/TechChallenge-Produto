@@ -1,9 +1,9 @@
-﻿using Moq;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
 using Domain.Base.Communication.Mediator;
 using Domain.Base.Messages.CommonMessages.Notifications;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
 
 namespace API.Tests.Controllers
 {
@@ -14,8 +14,9 @@ namespace API.Tests.Controllers
         {
             // Arrange
             var notifications = new DomainNotificationHandler();
+            var mediatorHandlerMock = new Mock<IMediatorHandler>();
             notifications.Handle(new DomainNotification("Erro", "Mensagem de erro"), CancellationToken.None).Wait();
-            var controller = new MockController(notifications, null); // MockController é uma implementação concreta de ControllerBase
+            var controller = new MockController(notifications, mediatorHandlerMock.Object); // MockController é uma implementação concreta de ControllerBase
 
             // Act
             var operacaoValida = controller.OperacaoValida();
@@ -46,6 +47,7 @@ namespace API.Tests.Controllers
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var mediatorHandlerMock = new Mock<IMediatorHandler>();
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString())
@@ -57,7 +59,7 @@ namespace API.Tests.Controllers
             {
                 HttpContext = new DefaultHttpContext { User = principal }
             };
-            var controller = new MockController(new DomainNotificationHandler(), null)
+            var controller = new MockController(new DomainNotificationHandler(), mediatorHandlerMock.Object)
             {
                 ControllerContext = controllerContext
             };
@@ -74,12 +76,13 @@ namespace API.Tests.Controllers
         {
             // Arrange
             var principal = new ClaimsPrincipal();
+            var mediatorHandlerMock = new Mock<IMediatorHandler>();
 
             var controllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext { User = principal }
             };
-            var controller = new MockController(new DomainNotificationHandler(), null)
+            var controller = new MockController(new DomainNotificationHandler(), mediatorHandlerMock.Object)
             {
                 ControllerContext = controllerContext
             };

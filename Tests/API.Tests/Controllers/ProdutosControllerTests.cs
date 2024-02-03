@@ -17,32 +17,45 @@ namespace API.Tests.Controllers
 {
 
 
-    public class ProdutosControllerTests
+    public class ProdutosControllerTests : IDisposable
     {
+        private readonly ServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvideStartTup;
+        private readonly Mock<IMediatorHandler> _mediatorHandlerMock;
+        private readonly Mock<IProdutosQueries> _produtosQueriesMock;
+        private readonly ProdutosController _produtosController;
+
+        public ProdutosControllerTests()
+        {
+            _serviceProvider = new ServiceCollection()
+               .AddScoped<IMediatorHandler, MediatorHandler>()
+               .AddScoped<INotificationHandler<DomainNotification>, DomainNotificationHandler>()
+               .BuildServiceProvider();
+
+            _serviceProvideStartTup = new TestStartup().ConfigureServices(new ServiceCollection());
+            _mediatorHandlerMock = new Mock<IMediatorHandler>();
+            _produtosQueriesMock = new Mock<IProdutosQueries>();
+            _produtosController = new ProdutosController(
+                _produtosQueriesMock.Object,
+                _serviceProvider.GetRequiredService<INotificationHandler<DomainNotification>>(),
+                _mediatorHandlerMock.Object);
+        }
+
         #region Testes unitários do metodo Get
         [Fact]
         public async Task AoChamarGet_DeveRetornarListaDeProdutos_QuandoProdutosDisponiveis()
         {
             // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
-
             var listaProdutos = new List<ProdutoDto>
             {
                 new ProdutoDto { Id = new Guid(), Nome = "Produto 1" },
                 new ProdutoDto { Id = new Guid(), Nome = "Produto 2" }
             };
 
-            produtosQueriesMock.Setup(x => x.ObterTodos()).ReturnsAsync(listaProdutos);
+            _produtosQueriesMock.Setup(x => x.ObterTodos()).ReturnsAsync(listaProdutos);
 
             // Act
-            var resultado = await produtosController.Get();
+            var resultado = await _produtosController.Get();
 
             // Assert
             var okObjectResult = Assert.IsType<OkObjectResult>(resultado);
@@ -53,21 +66,12 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGet_DeveRetornarNotFound_QuandoNaoHaProdutos()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
 
             // Configurar o mock para retornar uma lista vazia
-            produtosQueriesMock.Setup(x => x.ObterTodos()).ReturnsAsync((List<ProdutoDto>)null);
+            _produtosQueriesMock.Setup(x => x.ObterTodos()).ReturnsAsync((List<ProdutoDto>)null);
 
             // Act
-            var resultado = await produtosController.Get();
+            var resultado = await _produtosController.Get();
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(resultado);
@@ -77,21 +81,12 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGet_DeveRetornarStatusCode500_QuandoOcorreExcecao()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
 
             // Configurar o mock para lançar uma exceção
-            produtosQueriesMock.Setup(x => x.ObterTodos()).ThrowsAsync(new Exception("Simulando uma exceção"));
+            _produtosQueriesMock.Setup(x => x.ObterTodos()).ThrowsAsync(new Exception("Simulando uma exceção"));
 
             // Act
-            var resultado = await produtosController.Get();
+            var resultado = await _produtosController.Get();
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultado);
@@ -104,26 +99,16 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGetGategories_DeveRetornarListaDeCategorias_QuandoCategoriasDisponiveis()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
-
             var listaCategorias = new List<CategoriaDto>
             {
                 new CategoriaDto { Id = new Guid(), Nome = "Categoria 1" },
                 new CategoriaDto { Id = new Guid(), Nome = "Categoria 2" }
             };
 
-            produtosQueriesMock.Setup(x => x.ObterCategorias()).ReturnsAsync(listaCategorias);
+            _produtosQueriesMock.Setup(x => x.ObterCategorias()).ReturnsAsync(listaCategorias);
 
             // Act
-            var resultado = await produtosController.GetGategories();
+            var resultado = await _produtosController.GetGategories();
 
             // Assert
             var okObjectResult = Assert.IsType<OkObjectResult>(resultado);
@@ -134,21 +119,12 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGetGategories_DeveRetornarNotFound_QuandoNaoHaCategorias()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
 
             // Configurar o mock para retornar uma lista vazia
-            produtosQueriesMock.Setup(x => x.ObterCategorias()).ReturnsAsync((List<CategoriaDto>)null);
+            _produtosQueriesMock.Setup(x => x.ObterCategorias()).ReturnsAsync((List<CategoriaDto>)null);
 
             // Act
-            var resultado = await produtosController.GetGategories();
+            var resultado = await _produtosController.GetGategories();
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(resultado);
@@ -158,21 +134,12 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGetGategories_DeveRetornarStatusCode500_QuandoOcorreExcecao()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
 
             // Configurar o mock para lançar uma exceção
-            produtosQueriesMock.Setup(x => x.ObterCategorias()).ThrowsAsync(new Exception("Simulando uma exceção"));
+            _produtosQueriesMock.Setup(x => x.ObterCategorias()).ThrowsAsync(new Exception("Simulando uma exceção"));
 
             // Act
-            var resultado = await produtosController.GetGategories();
+            var resultado = await _produtosController.GetGategories();
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultado);
@@ -185,22 +152,12 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGetById_DeveRetornarProduto_QuandoProdutoDisponivel()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
-
             var produto = new ProdutoDto { Id = new Guid(), Nome = "Produto 1" };
 
-            produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>())).ReturnsAsync(produto);
+            _produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>())).ReturnsAsync(produto);
 
             // Act
-            var resultado = await produtosController.Get(It.IsAny<Guid>());
+            var resultado = await _produtosController.Get(It.IsAny<Guid>());
 
             // Assert
             var okObjectResult = Assert.IsType<OkObjectResult>(resultado);
@@ -211,21 +168,12 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGetById_DeveRetornarNotFound_QuandoNaoHaProduto()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
 
             // Configurar o mock para retornar uma lista vazia
-            produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>())).ReturnsAsync((ProdutoDto)null);
+            _produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>())).ReturnsAsync((ProdutoDto)null);
 
             // Act
-            var resultado = await produtosController.Get(It.IsAny<Guid>());
+            var resultado = await _produtosController.Get(It.IsAny<Guid>());
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(resultado);
@@ -235,21 +183,12 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGetById_DeveRetornarStatusCode500_QuandoOcorreExcecao()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
 
             // Configurar o mock para lançar uma exceção
-            produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>())).ThrowsAsync(new Exception("Simulando uma exceção"));
+            _produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>())).ThrowsAsync(new Exception("Simulando uma exceção"));
 
             // Act
-            var resultado = await produtosController.Get(It.IsAny<Guid>());
+            var resultado = await _produtosController.Get(It.IsAny<Guid>());
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultado);
@@ -262,27 +201,17 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGetByCodigo_DeveRetornarListaDeProdutos_QuandoProdutosDisponiveis()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
             var codigo = 1;
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
-
             var listaProdutos = new List<ProdutoDto>
             {
                 new ProdutoDto { Id = new Guid(), Nome = "Produto 1" },
                 new ProdutoDto { Id = new Guid(), Nome = "Produto 2" }
             };
 
-            produtosQueriesMock.Setup(x => x.ObterPorCategoria(codigo)).ReturnsAsync(listaProdutos);
+            _produtosQueriesMock.Setup(x => x.ObterPorCategoria(codigo)).ReturnsAsync(listaProdutos);
 
             // Act
-            var resultado = await produtosController.Get(codigo);
+            var resultado = await _produtosController.Get(codigo);
 
             // Assert
             var okObjectResult = Assert.IsType<OkObjectResult>(resultado);
@@ -293,22 +222,13 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGetByCodigo_DeveRetornarNotFound_QuandoNaoHaProdutos()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
             var codigo = 1;
 
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
-
             // Configurar o mock para retornar uma lista vazia
-            produtosQueriesMock.Setup(x => x.ObterPorCategoria(codigo)).ReturnsAsync((List<ProdutoDto>)null);
+            _produtosQueriesMock.Setup(x => x.ObterPorCategoria(codigo)).ReturnsAsync((List<ProdutoDto>)null);
 
             // Act
-            var resultado = await produtosController.Get(codigo);
+            var resultado = await _produtosController.Get(codigo);
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(resultado);
@@ -318,22 +238,13 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarGetByCodigo_DeveRetornarStatusCode500_QuandoOcorreExcecao()
         {
-            // Arrange
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
             var codigo = 1;
 
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
-
             // Configurar o mock para lançar uma exceção
-            produtosQueriesMock.Setup(x => x.ObterPorCategoria(codigo)).ThrowsAsync(new Exception("Simulando uma exceção"));
+            _produtosQueriesMock.Setup(x => x.ObterPorCategoria(codigo)).ThrowsAsync(new Exception("Simulando uma exceção"));
 
             // Act
-            var resultado = await produtosController.Get(codigo);
+            var resultado = await _produtosController.Get(codigo);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultado);
@@ -346,23 +257,6 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarPost_DeveRetornarOk_QuandoCadastroProdutoBemSucedido()
         {
-            // Arrange
-            var serviceProvider = new ServiceCollection()
-               .AddScoped<IMediatorHandler, MediatorHandler>()
-               .AddScoped<INotificationHandler<DomainNotification>, DomainNotificationHandler>()
-               .BuildServiceProvider();
-
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-
-            // Obtenha uma instância real de DomainNotificationHandler do contêiner
-            var domainNotificationHandler = serviceProvider.GetRequiredService<INotificationHandler<DomainNotification>>();
-
-            var produtosController = new ProdutosController(
-                null,
-                domainNotificationHandler,
-                mediatorHandlerMock.Object
-            );
-
             var produtoInput = new ProdutoInput
             {
                 CategoriaId = Guid.NewGuid(),
@@ -374,10 +268,10 @@ namespace API.Tests.Controllers
             };
 
             // Configurar o mock do MediatorHandler para simular publicação de notificações
-            mediatorHandlerMock.Setup(x => x.PublicarNotificacao(It.IsAny<DomainNotification>()));
+            _mediatorHandlerMock.Setup(x => x.PublicarNotificacao(It.IsAny<DomainNotification>()));
 
             // Configurar o mock para retornar um produto simulado
-            mediatorHandlerMock.Setup(x => x.EnviarComando<AdicionarProdutoCommand, ProdutoOutput>(It.IsAny<AdicionarProdutoCommand>()))
+            _mediatorHandlerMock.Setup(x => x.EnviarComando<AdicionarProdutoCommand, ProdutoOutput>(It.IsAny<AdicionarProdutoCommand>()))
                 .ReturnsAsync(new ProdutoOutput
                 {
                     Id = Guid.NewGuid(),
@@ -386,7 +280,7 @@ namespace API.Tests.Controllers
                 });
 
             // Act
-            var resultado = await produtosController.Post(produtoInput);
+            var resultado = await _produtosController.Post(produtoInput);
 
             // Assert
             var objectResult = Assert.IsType<OkObjectResult>(resultado);
@@ -399,14 +293,11 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarPost_DeveRetornarBadRequest_QuandoCadastroProdutoInvalido()
         {
-            // Arrange
-            var serviceProvider = new TestStartup().ConfigureServices(new ServiceCollection());
-
-            var domainNotificationHandler = serviceProvider.GetRequiredService<INotificationHandler<DomainNotification>>();
-            var mediatorHandler = serviceProvider.GetRequiredService<IMediatorHandler>();
+            var domainNotificationHandler = _serviceProvideStartTup.GetRequiredService<INotificationHandler<DomainNotification>>();
+            var mediatorHandler = _serviceProvideStartTup.GetRequiredService<IMediatorHandler>();
 
             var produtosController = new ProdutosController(
-                null,
+                _produtosQueriesMock.Object,
                 domainNotificationHandler,
                 mediatorHandler
             );
@@ -437,14 +328,6 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarPost_DeveRetornarStatusCode500_QuandoOcorreExcecao()
         {
-            // Arrange
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-            var produtosController = new ProdutosController(
-                null,
-                null,
-                mediatorHandlerMock.Object
-            );
-
             var produtoInput = new ProdutoInput
             {
                 CategoriaId = Guid.NewGuid(),
@@ -456,11 +339,11 @@ namespace API.Tests.Controllers
             };
 
             // Configurar o mock para lançar uma exceção
-            mediatorHandlerMock.Setup(x => x.EnviarComando<AdicionarProdutoCommand, ProdutoOutput>(It.IsAny<AdicionarProdutoCommand>()))
+            _mediatorHandlerMock.Setup(x => x.EnviarComando<AdicionarProdutoCommand, ProdutoOutput>(It.IsAny<AdicionarProdutoCommand>()))
                 .ThrowsAsync(new Exception("Simulando uma exceção"));
 
             // Act
-            var resultado = await produtosController.Post(produtoInput);
+            var resultado = await _produtosController.Post(produtoInput);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultado);
@@ -473,17 +356,7 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarPut_DeveRetornarOk_QuandoAtualizacaoProdutoBemSucedida()
         {
-            // Arrange
-            var serviceProvider = new ServiceCollection()
-                .AddScoped<IMediatorHandler, MediatorHandler>()
-                .AddScoped<INotificationHandler<DomainNotification>, DomainNotificationHandler>()
-                .BuildServiceProvider();
-
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-            var domainNotificationHandler = serviceProvider.GetRequiredService<INotificationHandler<DomainNotification>>();
-
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
+            _produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
                 .ReturnsAsync(new ProdutoDto
                 {
                     Id = Guid.NewGuid(),
@@ -494,12 +367,6 @@ namespace API.Tests.Controllers
                     Imagem = "Base64ImagemAntiga",
                     Descricao = "Descrição Antiga"
                 });
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                domainNotificationHandler,
-                mediatorHandlerMock.Object
-            );
 
             var produtoEditarInput = new ProdutoEditarInput
             {
@@ -520,12 +387,12 @@ namespace API.Tests.Controllers
                 Valor = produtoEditarInput.Valor
             };
 
-            mediatorHandlerMock.Setup(x => x.PublicarNotificacao(It.IsAny<DomainNotification>()));
-            mediatorHandlerMock.Setup(x => x.EnviarComando<AtualizarProdutoCommand, ProdutoOutput>(It.IsAny<AtualizarProdutoCommand>()))
+            _mediatorHandlerMock.Setup(x => x.PublicarNotificacao(It.IsAny<DomainNotification>()));
+            _mediatorHandlerMock.Setup(x => x.EnviarComando<AtualizarProdutoCommand, ProdutoOutput>(It.IsAny<AtualizarProdutoCommand>()))
                 .ReturnsAsync(produtoAtualizado);
 
             // Act
-            var resultado = await produtosController.Put(produtoEditarInput);
+            var resultado = await _produtosController.Put(produtoEditarInput);
 
             // Assert
             var objectResult = Assert.IsType<OkObjectResult>(resultado);
@@ -538,14 +405,10 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarPut_DeveRetornarBadRequest_QuandoCadastroProdutoInvalido()
         {
-            // Arrange
-            var serviceProvider = new TestStartup().ConfigureServices(new ServiceCollection());
+            var domainNotificationHandler = _serviceProvideStartTup.GetRequiredService<INotificationHandler<DomainNotification>>();
+            var mediatorHandler = _serviceProvideStartTup.GetRequiredService<IMediatorHandler>();
 
-            var domainNotificationHandler = serviceProvider.GetRequiredService<INotificationHandler<DomainNotification>>();
-            var mediatorHandler = serviceProvider.GetRequiredService<IMediatorHandler>();
-
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
+            _produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
                 .ReturnsAsync(new ProdutoDto
                 {
                     Id = Guid.NewGuid(),
@@ -558,7 +421,7 @@ namespace API.Tests.Controllers
                 });
 
             var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
+                _produtosQueriesMock.Object,
                 domainNotificationHandler,
                 mediatorHandler
             );
@@ -589,24 +452,8 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarPut_DeveRetornarNotFound_QuandoProdutoNaoEncontrado()
         {
-            // Arrange
-            var serviceProvider = new ServiceCollection()
-                .AddScoped<IMediatorHandler, MediatorHandler>()
-                .AddScoped<INotificationHandler<DomainNotification>, DomainNotificationHandler>()
-                .BuildServiceProvider();
-
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-            var domainNotificationHandler = serviceProvider.GetRequiredService<INotificationHandler<DomainNotification>>();
-
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
+            _produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
                 .ReturnsAsync((ProdutoDto)null);  // Produto não encontrado
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                domainNotificationHandler,
-                mediatorHandlerMock.Object
-            );
 
             var produtoEditarInput = new ProdutoEditarInput
             {
@@ -619,13 +466,13 @@ namespace API.Tests.Controllers
                 Descricao = "Nova descrição do produto"
             };
 
-            mediatorHandlerMock.Setup(x => x.PublicarNotificacao(It.IsAny<DomainNotification>()));
+            _mediatorHandlerMock.Setup(x => x.PublicarNotificacao(It.IsAny<DomainNotification>()));
 
-            mediatorHandlerMock.Setup(x => x.EnviarComando<AtualizarProdutoCommand, ProdutoOutput>(It.IsAny<AtualizarProdutoCommand>()))
+            _mediatorHandlerMock.Setup(x => x.EnviarComando<AtualizarProdutoCommand, ProdutoOutput>(It.IsAny<AtualizarProdutoCommand>()))
                 .ReturnsAsync((ProdutoOutput)null);
 
             // Act
-            var resultado = await produtosController.Put(produtoEditarInput);
+            var resultado = await _produtosController.Put(produtoEditarInput);
 
             // Assert
             var notFoundObjectResult = Assert.IsType<NotFoundObjectResult>(resultado);
@@ -637,11 +484,8 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarPut_DeveRetornarStatusCode500_QuandoOcorreExcecao()
         {
-            // Arrange
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
 
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
+            _produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
                 .ReturnsAsync(new ProdutoDto
                 {
                     Id = Guid.NewGuid(),
@@ -654,12 +498,6 @@ namespace API.Tests.Controllers
                     DataCadastro = DateTime.Now
                 });
 
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                null,
-                mediatorHandlerMock.Object
-            );
-
             var produtoEditarInput = new ProdutoEditarInput
             {
                 Id = Guid.NewGuid(),
@@ -671,11 +509,11 @@ namespace API.Tests.Controllers
                 Descricao = "Nova descrição do produto"
             };
 
-            mediatorHandlerMock.Setup(x => x.EnviarComando<AtualizarProdutoCommand, ProdutoOutput>(It.IsAny<AtualizarProdutoCommand>()))
+            _mediatorHandlerMock.Setup(x => x.EnviarComando<AtualizarProdutoCommand, ProdutoOutput>(It.IsAny<AtualizarProdutoCommand>()))
                 .ThrowsAsync(new Exception("Simulando uma exceção"));
 
             // Act
-            var resultado = await produtosController.Put(produtoEditarInput);
+            var resultado = await _produtosController.Put(produtoEditarInput);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultado);
@@ -688,17 +526,8 @@ namespace API.Tests.Controllers
         [Fact]
         public async Task AoChamarDelete_DeveRetornarOk_QuandoProdutoExcluidoComSucesso()
         {
-            // Arrange
-            var serviceProvider = new ServiceCollection()
-               .AddScoped<IMediatorHandler, MediatorHandler>()
-               .AddScoped<INotificationHandler<DomainNotification>, DomainNotificationHandler>()
-               .BuildServiceProvider();
 
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-            var domainNotificationHandler = serviceProvider.GetRequiredService<INotificationHandler<DomainNotification>>();
-
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
+            _produtosQueriesMock.Setup(x => x.ObterPorId(It.IsAny<Guid>()))
                 .ReturnsAsync(new ProdutoDto
                 {
                     Id = Guid.NewGuid(),
@@ -711,23 +540,17 @@ namespace API.Tests.Controllers
                     DataCadastro = DateTime.Now
                 });
 
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                domainNotificationHandler,
-                mediatorHandlerMock.Object
-            );
-
             var idProduto = Guid.NewGuid();
 
-            mediatorHandlerMock.Setup(x => x.PublicarNotificacao(It.IsAny<DomainNotification>()));
+            _mediatorHandlerMock.Setup(x => x.PublicarNotificacao(It.IsAny<DomainNotification>()));
 
-            mediatorHandlerMock.Setup(x => x.EnviarComando<RemoverProdutoCommand, bool>(It.IsAny<RemoverProdutoCommand>()))
+            _mediatorHandlerMock.Setup(x => x.EnviarComando<RemoverProdutoCommand, bool>(It.IsAny<RemoverProdutoCommand>()))
                                .ReturnsAsync(true)
                                .Callback<RemoverProdutoCommand>(cmd =>
                                    Assert.Equal(idProduto, cmd.idProduto));
 
             // Act
-            var resultado = await produtosController.Delete(idProduto);
+            var resultado = await _produtosController.Delete(idProduto);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(resultado);
@@ -740,25 +563,13 @@ namespace API.Tests.Controllers
             // Arrange
             var idProdutoInexistente = Guid.NewGuid();
 
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            produtosQueriesMock.Setup(x => x.ObterPorId(idProdutoInexistente))
+            _produtosQueriesMock.Setup(x => x.ObterPorId(idProdutoInexistente))
                                .ReturnsAsync((ProdutoDto)null);
-
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-            var domainNotificationHandler = new DomainNotificationHandler();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                domainNotificationHandler,
-                mediatorHandlerMock.Object
-            );
-
             // Act
-            var resultado = await produtosController.Delete(idProdutoInexistente);
+            var resultado = await _produtosController.Delete(idProdutoInexistente);
 
             // Assert
             Assert.IsType<NotFoundObjectResult>(resultado);
-            domainNotificationHandler.Dispose();
         }
 
         [Fact]
@@ -767,27 +578,23 @@ namespace API.Tests.Controllers
             // Arrange
             var idProduto = Guid.NewGuid();
 
-            var produtosQueriesMock = new Mock<IProdutosQueries>();
-            produtosQueriesMock.Setup(x => x.ObterPorId(idProduto))
+            _produtosQueriesMock.Setup(x => x.ObterPorId(idProduto))
                                .ThrowsAsync(new Exception("Erro ao acessar o banco de dados"));
 
-            var mediatorHandlerMock = new Mock<IMediatorHandler>();
-            var domainNotificationHandler = new DomainNotificationHandler();
-
-            var produtosController = new ProdutosController(
-                produtosQueriesMock.Object,
-                domainNotificationHandler,
-                mediatorHandlerMock.Object
-            );
-
             // Act
-            var resultado = await produtosController.Delete(idProduto);
+            var resultado = await _produtosController.Delete(idProduto);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultado);
             Assert.Equal(StatusCodes.Status500InternalServerError, objectResult.StatusCode);
             Assert.Equal("Erro ao tentar excluir produto. Erro: Erro ao acessar o banco de dados", objectResult.Value);
-            domainNotificationHandler.Dispose();
+        }
+
+        public void Dispose()
+        {
+            _produtosController.Dispose();
+            _serviceProvider.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         #endregion
