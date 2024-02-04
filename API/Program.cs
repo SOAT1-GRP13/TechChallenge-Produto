@@ -10,6 +10,14 @@ using Application.Catalogo.AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurando LoggerFactory e criando uma instância de ILogger
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddConsole();
+    builder.AddDebug();
+});
+var logger = loggerFactory.CreateLogger<Program>();
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -18,6 +26,8 @@ string secret = "";
 
 if (builder.Environment.IsProduction())
 {
+    logger.LogInformation("Ambiente de Producao detectado.");
+
     builder.Configuration.AddAmazonSecretsManager("us-west-2", "produto-secret");
     builder.Services.Configure<Secrets>(builder.Configuration);
 
@@ -27,7 +37,8 @@ if (builder.Environment.IsProduction())
 } 
 else
 {
-    //local
+    logger.LogInformation("Ambiente de Desenvolvimento/Local detectado.");
+
     builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetSection(DatabaseSettings.DatabaseConfiguration));
     connectionString = builder.Configuration.GetSection("ConnectionString").Value;
 
